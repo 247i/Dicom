@@ -1,0 +1,5 @@
+LIBRARY	HookDLL
+
+EXPORTS ; Definition des fonctions exportees
+InitHook
+EndHook

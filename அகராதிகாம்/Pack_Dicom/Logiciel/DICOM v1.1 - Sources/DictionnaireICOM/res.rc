@@ -1,0 +1,268 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Français (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAIN_DIALOG DIALOGEX 0, 0, 100, 153
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+CAPTION "DICOM"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "F1:",IDC_BUTTON_F1,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    7,86,14
+    CONTROL         "F2:",IDC_BUTTON_F2,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    20,86,14
+    CONTROL         "F3:",IDC_BUTTON_F3,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    34,86,14
+    CONTROL         "F4:",IDC_BUTTON_F4,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    48,86,14
+    CONTROL         "F5:",IDC_BUTTON_F5,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    62,86,14
+    CONTROL         "F6:",IDC_BUTTON_F6,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    76,86,14
+    CONTROL         "F7:",IDC_BUTTON_F7,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    90,86,14
+    CONTROL         "F8:",IDC_BUTTON_F8,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    104,86,14
+    CONTROL         "F9:",IDC_BUTTON_F9,"Button",BS_OWNERDRAW | WS_TABSTOP,7,
+                    118,86,14
+    CONTROL         "F10:",IDC_BUTTON_F10,"Button",BS_OWNERDRAW | WS_TABSTOP,
+                    7,132,86,14
+END
+
+IDD_DIALOG_CONFIGURER DIALOGEX 0, 0, 302, 232
+STYLE DS_SYSMODAL | DS_LOCALEDIT | DS_SETFONT | DS_SETFOREGROUND | DS_CENTER | 
+    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOINHERITLAYOUT
+CAPTION "Configuration"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,82,211,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,165,211,50,14
+    GROUPBOX        "Aperçu",IDC_STATIC,205,7,90,87
+    CONTROL         "Bouton",IDC_BUTTON_APERCU,"Button",BS_OWNERDRAW | 
+                    WS_TABSTOP,211,40,76,24
+    CONTROL         "",IDC_SLIDER_ROUGE,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,48,39,100,15
+    CONTROL         "",IDC_SLIDER_VERT,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,48,54,100,15
+    CONTROL         "",IDC_SLIDER_BLEU,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,48,70,100,15
+    LTEXT           "Rouge :",IDC_STATIC,16,42,35,8
+    LTEXT           "Vert :",IDC_STATIC,16,57,35,8
+    LTEXT           "Bleu :",IDC_STATIC,16,73,33,8
+    EDITTEXT        IDC_EDIT_ROUGE,154,39,34,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_VERT,154,56,34,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_BLEU,154,72,34,14,ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Couleurs",IDC_STATIC,7,7,189,87
+    CONTROL         "Couleur du texte",IDC_RADIO_TEXTE,"Button",
+                    BS_AUTORADIOBUTTON,14,22,87,10
+    CONTROL         "Couleur de fond",IDC_RADIO_FOND,"Button",
+                    BS_AUTORADIOBUTTON,105,23,79,10
+    GROUPBOX        "Police",IDC_STATIC,7,99,288,46
+    CONTROL         "Gras",IDC_CHECK_GRAS,"Button",BS_AUTOCHECKBOX | 
+                    BS_LEFTTEXT | WS_TABSTOP,13,131,31,10
+    CONTROL         "Italique",IDC_CHECK_ITALIQUE,"Button",BS_AUTOCHECKBOX | 
+                    BS_LEFTTEXT | WS_TABSTOP,77,131,38,10
+    COMBOBOX        IDC_COMBO_POLICE,15,113,271,81,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Accessibilité",IDC_STATIC,7,151,288,54
+    EDITTEXT        IDC_EDIT_NB_LETTRE,111,167,40,14,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    EDITTEXT        IDC_EDIT_TEMPS,111,186,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Temps avant réduction (s) :",IDC_STATIC,14,189,87,8
+    LTEXT           "Nb lettres avant complétion :",IDC_STATIC,14,169,91,8
+    CONTROL         "Activer insertion automatique",IDC_CHECK_AUTOMATIQUE,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,178,
+                    168,107,10
+END
+
+IDD_DIALOG_DICTIONNAIRE DIALOGEX 0, 0, 249, 223
+STYLE DS_SYSMODAL | DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | 
+    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+CAPTION "Gestion du dictionnaire"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Gestion des mots",IDC_STATIC,8,7,233,136
+    GROUPBOX        "Gestion du dictionnaire",IDC_STATIC,7,148,234,38
+    LTEXT           "Mot :",IDC_STATIC,17,25,18,8
+    EDITTEXT        IDC_EDIT_MOT,61,23,122,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Ajouter",IDC_BUTTON_AJOUTER,190,23,43,14
+    PUSHBUTTON      "Importer...",IDC_BUTTON_IMPORTER,16,163,67,14
+    PUSHBUTTON      "Supprimer",IDC_BUTTON_SUPPRIMER,190,42,43,14
+    LISTBOX         IDC_LIST_RESULTAT,15,42,167,91,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Fermer",IDOK,99,191,50,14
+    CTEXT           "",IDC_STATIC_RETOUR,0,210,249,13,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "RAZ poids",IDC_BUTTON_RAZ_POIDS,164,163,68,14
+    PUSHBUTTON      "RAZ dictionnaire",IDC_BUTTON_RAZ_DICO,90,163,68,14
+    PUSHBUTTON      "RAZ poids",IDC_BUTTON_RAZ_MOT,189,62,44,14
+END
+
+IDD_DIALOG_DEMARRAGE DIALOGEX 0, 0, 144, 34
+STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_VISIBLE | WS_BORDER | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            IDI_ICON_DEMARRAGE,IDC_STATIC,7,7,20,20
+    LTEXT           "DICOM\r\nChargement de l'application...",IDC_STATIC,40,
+                    8,97,19
+END
+
+IDD_DIALOG_INSERTION DIALOGEX 0, 0, 182, 36
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Insertion automatique"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Ajouter",IDOK,134,17,41,14
+    LTEXT           "Voulez vous ajouter ce mot au dictionnaire DICOM ?",
+                    IDC_STATIC,7,4,166,8
+    CTEXT           "Mot a inserer",IDC_STATIC_INSERER,7,19,121,11,WS_BORDER
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_MAIN_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 93
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 146
+    END
+
+    IDD_DIALOG_CONFIGURER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 295
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 225
+    END
+
+    IDD_DIALOG_DICTIONNAIRE, DIALOG
+    BEGIN
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 220
+    END
+
+    IDD_DIALOG_DEMARRAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 137
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 27
+    END
+
+    IDD_DIALOG_INSERTION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 175
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU_MINIMIZE MENU 
+BEGIN
+    POPUP "Popup"
+    BEGIN
+        MENUITEM "Configurer...",               ID_POPUP_CONFIGURER
+        MENUITEM "Dictionnaire...",             ID_POPUP_DICTIONNAIRE
+        MENUITEM SEPARATOR
+        MENUITEM "Quitter",                     ID_POPUP_QUITTER
+        MENUITEM SEPARATOR
+        MENUITEM "Annuler",                     ID_POPUP_ANNULER
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON_APPLICATION    ICON                    "res\\ico\\dicom.ico"
+IDI_ICON_DEMARRAGE      ICON                    "res\\ico\\creationdico.ico"
+#endif    // Français (France) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
