@@ -22,6 +22,7 @@ jobs:
         delete_release: true  
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
 
     - name: வெளியீடு
       uses: ncipollo/release-action@v1
