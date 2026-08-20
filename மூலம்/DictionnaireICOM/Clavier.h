@@ -26,6 +26,9 @@
 /*                                                                      */
 /*======================================================================*/
 
+#include <Windows.h>
+#include "resource.h"
+
 class Clavier
 {
 /* -------------------------------------------------------------------- */
@@ -38,7 +41,11 @@ public:
 	 * presentes dans la chaine fournie sur le clavier.
 	 * @param texte Texte a simuler au clavier.
 	 */
-	static void SimulerTexte(const char * texte);
+	static void SimulerTexte(const wchar_t * texte);
+
+	static void SimulerBackSpace();
+
+	static void SimulerTouche(wchar_t touche);
 	
 /* -------------------------------------------------------------------- */
 /*                        PRIVATE                                       */
@@ -50,11 +57,13 @@ private:
 	 * virtuelle. Methode pas tres performante.
 	 * param touche touche virtuelle a simuler.
 	 */
-	static void kbdSimulerTouche(unsigned char touche);
+	
 
 	/**
 	 * @brief Simuler un texte entree au clavier.
 	 * @param texte Texte a simuler.
 	 */
-	static void kbdSimulerTexte(TCHAR *texte);
+	static void kbdSimulerTexte(const wchar_t *texte);
+
+
 };

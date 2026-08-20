@@ -28,8 +28,7 @@
 
 /* ------------------------------------------------------------ INCLUDE */
 /* ---------------------------------------------------- Include système */
-#include <windows.h> // API windows
-#include <locale>
+//#include <windows.h> // API windows
 
 /* -------------------------------------------------- Include personnel */
 #include "GestionnaireBoutons.h"
@@ -44,57 +43,63 @@ static const float coefHeightWidthFontMin = 0.15f;
 /* -------------------------------------------------------------------- */
 /*------------------------------------------------- Fonctions publiques */
 
-std::string GestionnaireBoutons::GetBoutonText(unsigned int i, std::string effacer)
+wstring GestionnaireBoutons::GetBoutonText(unsigned int i, wstring effacer)
 {
 	// Chaine a retourner
-	std::string xorReturn;
+	wstring xorReturn;
 
 	// Taille de "F1: " par exemple
-	unsigned int tailleInutile = 4;
+	unsigned int useless_len = 4;
 
 	if (i >= 9) { // Plus de deux chiffres
-		tailleInutile = 5;
+		useless_len = 5;
 	}
 
-	// XOR
-	xorReturn = m_textButtons[i].substr(tailleInutile+effacer.length()
-			, m_textButtons[i].size()-(tailleInutile+effacer.length()));
+	xorReturn = m_textButtons[i].substr(useless_len + effacer.length()
+		, m_textButtons[i].size() - (useless_len + effacer.length()));
 
 	return xorReturn;
 }
 
-void GestionnaireBoutons::SetBoutonText(unsigned int i, std::string & texte)
+void GestionnaireBoutons::SetBoutonText(unsigned int i, wstring texte)
 {
-	if (i >= NB_MAX_BUTTONS) // Ignore si non valide
+	if (i >= m_nbWord) // Ignore si non valide
 		return;
 
 	// Creation du nom dans l'ihm
-	char bufferConv[12];
+	wchar_t bufferConv[12];
 	m_textButtons[i].clear();
-	m_textButtons[i].append("F");
-	m_textButtons[i].append(itoa(i+1, bufferConv, 10));
-	m_textButtons[i].append(": ");
+	m_textButtons[i].append(L"F");
+	_itow(i + 1, bufferConv, 10);
+	m_textButtons[i].append(bufferConv);
+	m_textButtons[i].append(L": ");
 	m_textButtons[i].append(texte);
 }
 
 void GestionnaireBoutons::DessinerBouton(LPDRAWITEMSTRUCT lpdis, unsigned int i)
 {
-	if (i >= NB_MAX_BUTTONS) // Ignore si non valide
+	if (i >= m_nbWord) // Ignore si non valide
 		return;
 
 	// Recupere le texte pour ce boutton
-	std::string texte = m_textButtons[i];
+	std::wstring texte = m_textButtons[i];
 
 	// Déterminer les dimensions du texte:
 	SIZE dims;
     GetTextExtentPoint32(lpdis->hDC, texte.c_str(), (int)texte.length(), &dims);
 
 	// Définir la couleur du texte:
-    SetTextColor(lpdis->hDC, m_colorText);
+	if (i == da_button)
+		SetTextColor(lpdis->hDC, m_colorFocusText);
+	else
+		SetTextColor(lpdis->hDC, m_colorText);
 
 	// Définir la couleur du fond:
-    SetBkColor(lpdis->hDC, m_colorBk);
-
+	if (i == da_button)
+		SetBkColor(lpdis->hDC, m_colorFocusBk);
+	else
+		SetBkColor(lpdis->hDC, m_colorBk);
+	
 	// Déterminer l'état du bouton:
 	BOOL etat = lpdis->itemState & ODS_SELECTED;
 
@@ -120,12 +125,12 @@ void GestionnaireBoutons::AppliquerFont(bool supprimerFont)
 {
 	// Calcul de la taille maximale de tous les bouttons
 	unsigned int maxIndex = 0;
-	for (unsigned int i=0; i<m_nbButtons; ++i) {
+	for (unsigned int i = 0; i<m_nbButtons; ++i) {
 		if(m_textButtons[i].length() > m_textButtons[maxIndex].length())
 			maxIndex = i;
 	}
 
-	for (unsigned int i=0; i<m_nbButtons; ++i) {
+	for (unsigned int i = 0; i<m_nbButtons; ++i) {
 		// Mise en place de la police pour le bouton
 		// Control sur lequel on travail
 		HWND currentHwnd;
@@ -192,6 +197,10 @@ void GestionnaireBoutons::AppliquerFont(bool supprimerFont)
 	}
 }
 
+void GestionnaireBoutons::SetBoutonFocus(unsigned int i) {
+	da_button = i;
+}
+
 void GestionnaireBoutons::PositionnerBoutons()
 {
 	// Variables pour les deplacements
@@ -226,19 +235,19 @@ void GestionnaireBoutons::PositionnerBoutons()
 	// Verifie si le texte est en majuscule
 	if (m_textButtons[maxIndex].length() >= (majBase + 2)) {
 		std::locale loc("French_France");
-		if (isupper(m_textButtons[maxIndex][majBase],loc)) {
-			if(isupper(m_textButtons[maxIndex][majBase + 1],loc)) {
+		if (isupper(m_textButtons[maxIndex][majBase], loc)) {
+			if (isupper(m_textButtons[maxIndex][majBase + 1], loc)) {
 				currentCoef = coefHeightWidthFontMaj; // Applique un coef maj
-			}		
+			}
 		}
 	}
 
 	// Calcul des dimensions des polices
 	RECT ctrlRect;
 	GetClientRect(GetDlgItem(m_hDlg, m_idBase), &ctrlRect);
-	height = (int)(ctrlRect.bottom-(currentCoef*ctrlRect.bottom));
-	width = (int)((ctrlRect.right-10-(currentCoef*ctrlRect.right))/(m_textButtons[maxIndex].length()));
-	int fontMaxWidth = (int)((height-(currentCoef*height)));
+	height = (int)(ctrlRect.bottom - (currentCoef*ctrlRect.bottom));
+	width = (int)((ctrlRect.right - 10 - (currentCoef*ctrlRect.right)) / (m_textButtons[maxIndex].length()));
+	int fontMaxWidth = (int)((height - (currentCoef*height)));
 	if (width > fontMaxWidth)
 		width = fontMaxWidth;
 
@@ -258,16 +267,36 @@ void GestionnaireBoutons::SetIdBase(unsigned int IDC_BUTTON_BASE)
 	m_idBase = IDC_BUTTON_BASE;
 }
 
-void GestionnaireBoutons::SetCouleurTexte(COLORREF couleurTexte)
+void GestionnaireBoutons::SetCouleurText(COLORREF couleurText)
 {
-	m_colorText = couleurTexte;
+	m_colorText = couleurText;
 }
 
-void GestionnaireBoutons::SetCouleurFond(COLORREF couleurFond)
+void GestionnaireBoutons::SetCouleurBk(COLORREF couleurBk)
 {
-	m_colorBk = couleurFond;
+	m_colorBk = couleurBk;
 }
 
+void GestionnaireBoutons::SetCouleurFocusBk(COLORREF couleurFocusBk) {
+	m_colorFocusBk = couleurFocusBk;
+}
+
+void GestionnaireBoutons::SetCouleurFocusText(COLORREF couleurFocusText) {
+	m_colorFocusText = couleurFocusText;
+
+}
+
+unsigned int GestionnaireBoutons::GetBoutonFocus() { 
+	return da_button; 
+}
+
+void GestionnaireBoutons::SetNbBoutons(unsigned int nbBoutons) {
+	m_nbButtons = nbBoutons <= m_nbWord ? nbBoutons : m_nbWord;
+}
+
+void GestionnaireBoutons::SetNbWord(unsigned int max) {
+	m_nbWord = max;
+}
 
 /* -------------------------------------------------------------------- */
 /*                        PRIVATE                                       */

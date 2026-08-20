@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lstElem>
+  <elem name="LOADING_DICOM">Chargement du dictionnaire...</elem>
+  <elem name="SAVING DICOM">Sauvegarde du dictionnaire...</elem>
+  <elem name="CLOSING_DICOM">Fermeture de l'application...</elem>
+  <elem name="CANCEL">Annuler</elem>
+  
+  <!-- TITLE -->
+  <elem name="TITLE_CONFIG">Configuration</elem>
+  <elem name="TITLE_DICO">Dictionnaires</elem>
+  <elem name="TITLE_SPEECH">Synthèse vocale</elem>
+  <elem name="TITLE_NEW_DICO">Nouveau dictionnaire...</elem>
+  <elem name="TITLE_WARNING">Attention !</elem>
+  
+  <!-- CONTEXT MENU -->
+  <elem name="CTX_CONFIG">Configurer...</elem>
+  <elem name="CTX_DICO">Dictionnaire...</elem>
+  <elem name="CTX_ACTIVATE">Activer DICOM</elem>
+  <elem name="CTX_DEACTIVATE">Désactiver DICOM</elem>
+  <elem name="CTX_QUIT">Quitter</elem>
+  
+  <!-- CONFIGURATION -->
+  <!-- Couleur -->
+  <elem name="CONFIG_COLORS">Couleurs</elem>
+  <elem name="CONFIG_COLORS_STATE">Etat :</elem>
+  <elem name="CONFIG_COLORS_STATE_NORMAL">Normal</elem>
+  <elem name="CONFIG_COLORS_STATE_SELECT">Selectionné</elem>
+  <elem name="CONFIG_COLORS_COLOR">Couleur :</elem>
+  <elem name="CONFIG_COLORS_COLOR_TEXT">Texte</elem>
+  <elem name="CONFIG_COLORS_COLOR_BG">Fond</elem>
+  <elem name="CONFIG_COLORS_RED">Rouge :</elem>
+  <elem name="CONFIG_COLORS_GREEN">Vert :</elem>
+  <elem name="CONFIG_COLORS_BLUE">Bleu :</elem>
+  
+  <!-- Aperçu -->
+  <elem name="CONFIG_OVERVIEW">Aperçu</elem>
+  <elem name="CONFIG_EXAMPLE">Exemple</elem>
+  
+  <!-- Police -->
+  <elem name="CONFIG_POLICE">Police</elem>
+  <elem name="CONFIG_POLICE_BOLD">Gras</elem>
+  <elem name="CONFIG_POLICE_ITALIC">Italique</elem>
+
+  <!-- Accessibilité -->
+  <elem name="CONFIG_ACCESS">Accessibilité</elem>
+  <elem name="CONFIG_ACCESS_NBLETTER">Nb lettres avant complétion :</elem>
+  <elem name="CONFIG_ACCESS_TIME_TO_REDUCE">Temps avant réduction :</elem>
+  <elem name="CONFIG_ACCESS_INSERT">Activer insertion automatique</elem>
+  <elem name="CONFIG_ACCESS_NBWORD">Nombre de mots</elem>
+  <elem name="CONFIG_ACCESS_TRANSPARENCY">Transparence</elem>
+  <elem name="CONFIG_ACCESS_TRANSPARENT">Transparent</elem>
+  <elem name="CONFIG_ACCESS_OPAC">Opaque</elem>
+  <elem name="CONFIG_ACCESS_SPEECH">Configurer la synhtèse vocale</elem>
+  
+  <!-- Mode de sélection -->
+  <elem name="CONFIG_SELECT">Mode de sélection</elem>
+  <elem name="CONFIG_SELECT_BY_FUNCTION">Touches fonctions (F1-F10)</elem>
+  <elem name="CONFIG_SELECT_BY_CLIC">Clic</elem>
+  <elem name="CONFIG_SELECT_BY_ARROWS">Ctrl + touches fléchées</elem>
+  
+ <elem name="CONFIG_SUPPORT">Support</elem>
+ <elem name="CONFIG_SUPPORT_HELP">En cas de problème, veuillez envoyer un mail à l'adresse:</elem>
+ <elem name="CONFIG_SUPPORT_MAIL">ugo.icomprovence@gmail.com</elem>
+  
+  <!-- SPEECH SYNTHESIS -->
+  <elem name="SPEECH_ACTIVATE">Activer synthèse vocale</elem>
+  <elem name="SPEECH_HOVER">Au survol</elem>
+  <elem name="SPEECH_INSERT">Après insertion</elem>
+
+  <elem name="SPEECH_PARAMS">Paramétrage de la voix</elem>
+  <elem name="SPEECH_VOICE">Voix :</elem>
+  <elem name="SPEECH_VOLUME">Volume :</elem>
+  <elem name="SPEECH_RATE">Vitesse :</elem>
+  <elem name="SPEECH_TEST_CUE">Tapez une phrase de test.</elem>
+  <elem name="SPEECH_TEST">Tester voix</elem>
+  
+  <!-- DICTIONNARY -->
+  <elem name="DICO_MANAGE_DICO">Gestion des dictionnaires</elem>
+  <elem name="DICO_CHOSE_DICO">Choix du dictionnaire :</elem>
+  <elem name="DICO_LOAD_DICO">Charger...</elem>
+  <elem name="DICO_NEW_DICO">Nouveau dictionnaire...</elem>
+  <elem name="DICO_DELETE_DICO">Supprimer dictionnaire</elem>
+  <elem name="DICO_RAZ_DICO">Remettre tous les poids à zéro</elem>
+  <elem name="DICO_MANAGE_WORDS">Gestion des mots</elem>
+  <elem name="DICO_CUE_WORD">Chercher un mot...</elem>
+  <elem name="DICO_ADD_WORD">Ajouter</elem>
+  <elem name="DICO_MODIFY_WORD">Modifier</elem>
+  <elem name="DICO_DELETE_WORD">Supprimer</elem>
+  <elem name="DICO_NOTIF_ADDED">" ajouté.</elem>
+  <elem name="DICO_NOTIF_EXIST">" existe déjà.</elem>
+  <elem name="DICO_NOTIF_MORE_LETTER_PLZ">Veuillez saisir plus de 3 lettres.</elem>
+  <elem name="DICO_NOTIF_LOADED">Dictionnaire chargé.</elem>
+  <elem name="DICO_NOTIF_CREATED">Dictionnaire créé.</elem>
+  <elem name="DICO_NOTIF_IMPORT_ERROR">Erreur lors de l'importation.</elem>
+  <elem name="DICO_NOTIF_WORD_DELETED">Mot supprimé.</elem>
+  <elem name="DICO_NOTIF_WORD_MODIFIED">" : Poids du mot modifié.</elem>
+  <elem name="DICO_NOTIF_RAZ_POND">Tous les poids ont été remis à zéro.</elem>
+  <elem name="DICO_NOTIF_DICO_DELETE">Dictionnaire supprimé.</elem>
+  
+  <elem name="DICO_WARNING_NO_POND">Attention : Vous n'avez pas renseigné le poids que vous souhaitez affecter au mot. Désirez-vous que DICOM mette le poids à zéro?</elem>
+  <elem name="DICO_WARNING_NO_POND_TITLE">Poids?</elem>
+  <elem name="DICO_WARNING_RAZ_POND">Êtes-vous sur de vouloir remettre tous les poids du dictionnaire à zéro?</elem>
+  <elem name="DICO_WARNING_RAZ_POND_TITLE">Confirmation</elem>
+  <elem name="DICO_WARNING_DELETE_DICO">Êtes-vous sur de vouloir supprimer le dictionnaire selectionné?</elem>
+  <elem name="DICO_WARNING_DELETE_DICO_TITLE">Supprimer dictionnaire... ?</elem>
+  <elem name="DICO_WARNING_NOTTHISONE">Vous ne pouvez pas supprimer le dictionnaire courant, veuillez d'abord charger un autre dictionnaire si vous souhaitez réellement supprimer celui-ci.</elem>
+  
+  
+  <elem name="WORD">Mot</elem>
+  <elem name="POND">Poids</elem>
+  
+  <elem name="NEW_DICO_TITLE">Nouveau dictionnaire...</elem>
+  
+  <elem name="NEW_DICO_STATIC">Vous souhaitez créer un nouveau dictionnaire :</elem>
+  <elem name="NEW_DICO_VIRGIN">Vierge</elem>
+  <elem name="NEW_DICO_FROM_DEFAULT">A partir du dictionnaire par défaut</elem>
+  <elem name="NEW_DICO_FROM_FILE">A partir d'un fichier .dic</elem>
+  <elem name="NEW_DICO_FROM_ACTUAL">A partir du dictionnaire actuel</elem>
+  
+  <elem name="NEW_DICO_NAME">Veuillez entrer le nom du nouveau dictionnaire :</elem>
+  <elem name="NEW_DICO_WARNING_ALREADY_EXIST">Un dictionnaire du même nom existe déjà, souhaitez vous le remplacer ? (Ceci supprimera l'ancien dictionnaire du même nom.)</elem>
+  <elem name="NEW_DICO_WARNING_NAME">Veuillez entrer un nom pour votre dictionnaire!</elem>
+  
+  <!-- POPUP -->
+  <elem name="POPUP_CHOSE_FILE">Choisissez un fichier...</elem>
+  
+  <!-- ERROR -->
+  <elem name="ERROR_LOAD_HOOK_TITLE">DLL introuvable</elem>
+  <elem name="ERROR_LOAD_HOOK_1">Erreur lors du chargement de "</elem>
+  <elem name="ERROR_LOAD_HOOK_2">", veuillez vérifiez votre installation.</elem>
+  <elem name="ERROR_LOAD_HOOK_3">Contactez le support si le problème persiste : ugo.icomprovence@gmail.com</elem>
+
+  <elem name="ERROR_LOAD_DICO_TITLE">Dictionnaire introuvable</elem>
+  <elem name="ERROR_LOAD_DICO_1">DICOM n'a pas réussi à trouver le fichier ".dic", </elem>
+  <elem name="ERROR_LOAD_DICO_2">veuillez vérifier votre installation.</elem>
+  <elem name="ERROR_LOAD_DICO_3">Contactez le support si le problème persiste : ugo.icomprovence@gmail.com</elem>
+
+  <elem name="ERROR_LOAD_SPEECH_TITLE">Erreur synthèse vocale</elem>
+  <elem name="ERROR_LOAD_SPEECH_1">Erreur lors du chargement de la synthèse vocale, </elem>
+  <elem name="ERROR_LOAD_SPEECH_2">celle-ci ne devrait pas fonctionner. </elem>
+  <elem name="ERROR_LOAD_SPEECH_3">Essayez de relancer DICOM, </elem>
+  <elem name="ERROR_LOAD_SPEECH_4">et contacter le support si le problème persiste : ugo.icomprovence@gmail.com</elem>
+  
+  <elem name="ERROR_NO_SELECT_TITLE">Aucun mode de sélection choisi!</elem>
+  <elem name="ERROR_NO_SELECT_1">Attention! Vous n'avez pas choisi de mode de sélection.</elem>
+  <elem name="ERROR_NO_SELECT_2">Il est nécessaire d'en choisir un afin de valider les propositions faites par le DICOM.</elem>
+  <elem name="ERROR_NO_SELECT_3">Pour plus d'informations, veuillez consulter le manuel.</elem>
+
+</lstElem>

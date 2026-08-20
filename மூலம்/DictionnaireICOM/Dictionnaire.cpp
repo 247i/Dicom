@@ -38,6 +38,7 @@
 /* -------------------------------------------------- Include personnel */
 #include "Dictionnaire.h"
 
+
 /* -------------------------------------------------------------------- */
 /*                        PRIVE                                         */
 /* --------------------------------------------------------- Constantes */
@@ -55,39 +56,98 @@ struct sort_mot_inverted
   }
 };
 
+static int distanceLev(wstring str1, wstring str2) {
+	int len1 = str1.length();
+	int len2 = str2.length();
+	int cost = 0;
+
+	// On tronque le mot du dictionnaire à la meme taille que le début de mot tapé
+	// pour ne pas fausser la distance par des "ajouts" de lettre en fin de mot
+	if (len1 >= len2)
+	{
+		wprintf(L"%.*s", len1 - 1, str1);
+		len1 = str1.length();
+	}
+
+	// tab is a table with lenStr1+1 rows and lenStr2+1 columns
+	int tab[MAX_WORD_LENGHT][MAX_WORD_LENGHT];
+
+	// initialisation du tableau
+	for (int i = 0; i <= len1; i++){ tab[i][0] = i; }
+
+	for (int j = 0; j <= len2; j++){ tab[0][j] = j; }
+
+	for (int i = 1; i <= len1; i++)
+	{
+		for (int j = 1; j <= len2; j++)
+		{
+			cost = (str1[i - 1] == str2[j - 1]) ? 0 : 1;
+
+			tab[i][j] = min((tab[i - 1][j] + 1),     // deletion
+				min((tab[i][j - 1] + 1),     // insertion
+				(tab[i - 1][j - 1] + cost))  // substitution
+				);
+
+			if ((i > 1) && (j > 1) && (str1[i - 1] == str2[j - 2]) && (str1[i - 2] == str2[j - 1]))
+			{
+				tab[i][j] = min(
+					tab[i][j],
+					(tab[i - 2][j - 2] + cost)   // transposition
+					);
+			}
+		}
+	}
+	return tab[len1][len2];
+}
+
 /*--------------------------------------------------- Fonctions privees */
 void Dictionnaire::trierDictionnaire()
 {
 	// Iterateur sur notre dictionnaire de niveau 0
-	DictionnaireNiveau0::iterator iterNiveau0;
+	DictionnaireNiveau0::iterator iter0;
 	// Iterateur sur notre dictionnaire de niveau 1
-	DictionnaireNiveau1::iterator iterNiveau1;
-	// Iterateur sur notre dictionnaire de niveau 2
-	DictionnaireNiveau2::iterator iterNiveau2;   
+	DictionnaireNiveau1::iterator iter1;
 
-	// Pour tous les dictionnaire de niveau 0
-	for (iterNiveau0=dictionnaire.begin();
-		iterNiveau0!=dictionnaire.end();
-		++iterNiveau0) {
+	DictionnaireNiveau2::iterator iter2;
+
+	// TRI DICO ONE CHAR
+	for (iter2 = dico1.begin();
+		iter2 != dico1.end();
+		iter2++) {
+		std::sort(iter2->second.begin(), iter2->second.end(), sort_mot_inverted());
+	}
+
+	// TRI DICO TWO CHAR
+	for (iter1 = dico2.begin();
+		iter1 != dico2.end();
+		iter1++) {
+		for (iter2 = iter1->second.begin();
+			iter2 != iter1->second.end();
+			iter2++) {
+			std::sort(iter2->second.begin(), iter2->second.end(), sort_mot_inverted());
+		}
+	}
+
+	// TRI DICO THREE CHAR AND MORE...
+	for (iter0=dico.begin();
+		iter0!=dico.end();
+		++iter0) {
 		// Pour tous les dictionnaire de niveau 1
-		for (iterNiveau1=iterNiveau0->second.begin();
-			iterNiveau1!=iterNiveau0->second.end();
-			iterNiveau1++) {
-			// Pour tous les dictionnaire de niveau 2
-			for (iterNiveau2=iterNiveau1->second.begin();
-				iterNiveau2!=iterNiveau1->second.end();
-				iterNiveau2++) {
-				std::sort(iterNiveau2->second.begin()
-					, iterNiveau2->second.end()
-					, sort_mot_inverted());
+		for (iter1=iter0->second.begin();
+			iter1!=iter0->second.end();
+			iter1++) {
+			for (iter2 = iter1->second.begin();
+				iter2 != iter1->second.end();
+				iter2++) {
+				std::sort(iter2->second.begin(), iter2->second.end(), sort_mot_inverted());
 			}
 		}
 	}
 }
 
-void Dictionnaire::filtrerVecteurMots(std::string & keyWords
+void Dictionnaire::filtrerVecteurMots(wstring & keyWords
 	, std::deque<MotPondere> & motsPonderes
-	, std::vector<std::string> & results
+	, std::vector<wstring> & results
 	, unsigned int & maxResults
 	, bool ignoreKeyWords)
 {
@@ -95,7 +155,7 @@ void Dictionnaire::filtrerVecteurMots(std::string & keyWords
 		iter!=motsPonderes.end();
 		++iter) {
 		if (maxResults>0) { // On peut encore fournir des mots
-			if (iter->mot.find(keyWords,0) != std::string::npos) {
+			if (iter->mot.find(keyWords) != wstring::npos /*|| distanceLev(iter->mot, keyWords) <= 3*/)/*iter->mot.find(keyWords,0) != std::string::npos*/ {
 				// Le mot commence bien pas la meme racine
 				if ((ignoreKeyWords == false) || (iter->mot.compare(keyWords) != 0)) { 
 					// Insere pas le mot recherche
@@ -105,27 +165,44 @@ void Dictionnaire::filtrerVecteurMots(std::string & keyWords
 			}
 		} 
 		else // Maximum de mots atteint
-			break;
+			return;
 	}
+	for (std::deque <MotPondere>::const_iterator iter = motsPonderes.begin();
+		iter != motsPonderes.end();
+		++iter) {
+		if (maxResults > 0 && std::find(results.begin(), results.end(), iter->mot) == results.end()) { // On peut encore fournir des mots
+			if (distanceLev(iter->mot, keyWords) <= 3) {
+				// Le mot commence bien pas la meme racine
+				if ((ignoreKeyWords == false) || (iter->mot.compare(keyWords) != 0)) {
+					// Insere pas le mot recherche
+					results.push_back(iter->mot);
+					maxResults--;
+				}
+			}
+		}
+		else // Maximum de mots atteint
+			return;
+	}
+	
 }
 
-void Dictionnaire::adapterVecteurMots(std::string & keyWords
-	, std::vector<std::string> & results)
+void Dictionnaire::adapterVecteurMots(wstring & keyWords
+	, std::vector<wstring> & results)
 {
 	// Type de caractere
 	std::locale loc("French_France");
-	
+
 	// Si la premiere lettre est une majuscule
 	if (isupper(keyWords[0], loc)){
 		// Contient le mot majuscule
-		char motTemp[MAX_WORD_LENGHT+1];
+		wchar_t motTemp[MAX_WORD_LENGHT+1];
 
 		// Si plus de deux lettres ET deuxieme lettre en majuscule
 		if ((keyWords.length() > 1) && (isupper(keyWords[1], loc)))	{ 
 			// Pour tous les mots on les mets en majuscule
 			for (unsigned int i=0; i<results.size(); i++ ) {
 				if (results[i].length() < MAX_WORD_LENGHT) {
-					strcpy(motTemp, results[i].c_str());
+					wcscpy_s(motTemp, results[i].c_str());
 					CharUpper(motTemp); //_strupr( motTemp );
 					results[i] = motTemp;
 				}
@@ -137,7 +214,7 @@ void Dictionnaire::adapterVecteurMots(std::string & keyWords
 			// Pour tous les mots on met en majuscule la premiere lettre
 			for (unsigned int i=0; i<results.size(); i++) {
 				if (results[i].length() < MAX_WORD_LENGHT) {
-					strcpy(motTemp, results[i].c_str());
+					wcscpy_s(motTemp, results[i].c_str());
 					motTemp[1] = '\0'; // Accelere le traitement
 					CharUpper(motTemp); //_strupr( motTemp );
 					results[i][0] = motTemp[0];
@@ -160,34 +237,71 @@ Dictionnaire::~Dictionnaire()
 {
 }
 
-bool Dictionnaire::LoadFromFile(char * file, bool checkExisteMot)
+bool Dictionnaire::LoadFromFile(wstring file, bool newDico)
 {
+
+	SupprimerMots();
+
 	// Creation d'un flux de lecture sur le fichier
-	std::ifstream infile(file, std::ios::binary);
+	wchar_t buf[256];
+	wsprintf(buf, L"%s%s%s\0", PATH_TO_DICO, file.c_str(), DIC);
+	wstring filepath = newDico ? file : buf;
+	std::wifstream infile(filepath, std::ios::binary);
 	if (!infile.good())	return false;
 
 	// Tant que on a des lignes a lire
-	std::string line;
-	while (std::getline(infile, line))
+	wstring line;
+	while (getline(infile, line))
 	{
-		std::istringstream iss(line);
+
+		// Lecture des octets du mots et de sa ponderation
+		std::wistringstream iss(line);
 
 		// Lecture des octets du mots et de sa ponderation
 		MotPondere mot;
-		char escape;
+		wchar_t escape;
 		iss >> mot.poids >> escape >> mot.mot;
-
-		// Ignore les mots deja existant
-		if (checkExisteMot)
-			if (ExisteMot(mot.mot))
-				continue;
 
 		// Ignore si plus petit que 3 caracteres
 		if (mot.mot.length() < 3)
 			continue;
 
-		// Sauvegarde du mot pondere dans le dictionnaire
-		dictionnaire[mot.mot[0]][mot.mot[1]][mot.mot[2]].push_back(mot);
+		bool exist = false;
+		DictionnaireNiveau0::iterator iter0;
+		DictionnaireNiveau1::iterator iter1;
+		DictionnaireNiveau2::iterator iter2;
+		std::deque<MotPondere>::iterator iterMot;
+		
+		iter0 = dico.find(mot.mot[0]);
+		if (iter0 != dico.end()) {
+			iter1 = iter0->second.find(mot.mot[1]);
+			if (iter1 != iter0->second.end()) {
+				iter2 = iter1->second.find(mot.mot[2]);
+				if (iter2 != iter1->second.end()) {
+					for (iterMot = iter2->second.begin();
+						iterMot != iter2->second.end();
+						iterMot++) {
+						if (iterMot->mot.compare(mot.mot) == 0) {
+							exist = true;
+							if (iterMot->poids < mot.poids) {
+								dico1[mot.mot[0]].erase(iterMot);
+								dico2[mot.mot[0]][mot.mot[1]].erase(iterMot);
+								dico[mot.mot[0]][mot.mot[1]][mot.mot[2]].erase(iterMot);
+								exist = false;
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		// Sauvegarde du mot pondere dans les dictionnaires
+		if (!exist) {
+			dico1[mot.mot[0]].push_back(mot);
+			dico2[mot.mot[0]][mot.mot[1]].push_back(mot);
+			dico[mot.mot[0]][mot.mot[1]][mot.mot[2]].push_back(mot);
+		}
 	}
 
 	// Trie du dictionnaire par poid
@@ -196,48 +310,49 @@ bool Dictionnaire::LoadFromFile(char * file, bool checkExisteMot)
 	return true;
 }
 
-bool Dictionnaire::SaveIntoFile(char * file)
-{
-	// Creation du flux d'ecriture avec ecrasement
-	std::ofstream outfile(file, std::ios::binary);
-	if (outfile.good()) {
-		// Iterateur sur notre dictionnaire de niveau 0
-		DictionnaireNiveau0::iterator iterNiveau0;
-		// Iterateur sur notre dictionnaire de niveau 1
-		DictionnaireNiveau1::iterator iterNiveau1;
-		// Iterateur sur notre dictionnaire de niveau 2
-		DictionnaireNiveau2::iterator iterNiveau2;   
+std::deque<MotPondere> Dictionnaire::GetAllWords() {
+	std::deque<MotPondere> toReturn;
+	DictionnaireNiveau2::iterator iter;
+	std::deque<MotPondere>::iterator iterMot;
+	for (iter = dico1.begin();
+		iter != dico1.end();
+		iter++) {
+		for (iterMot = iter->second.begin();
+			iterMot != iter->second.end();
+			iterMot++) {
+			MotPondere mp;
+			mp.mot = iterMot->mot;
+			mp.poids = iterMot->poids;
+			toReturn.push_back(mp);
+		}
+	}
+	return toReturn;
+}
 
-		// Pour tous les dictionnaire de niveau 0
-		for (iterNiveau0=dictionnaire.begin();
-			iterNiveau0!=dictionnaire.end();
-			++iterNiveau0) {
-			// Pour tous les dictionnaire de niveau 1
-			for (iterNiveau1=iterNiveau0->second.begin();
-				iterNiveau1!=iterNiveau0->second.end();
-				iterNiveau1++) {
-				// Pour tous les dictionnaire de niveau 2
-				for (iterNiveau2=iterNiveau1->second.begin();
-					iterNiveau2!=iterNiveau1->second.end();
-					iterNiveau2++) {
-					// Pour tous les mot
-					for (std::deque<MotPondere>::const_iterator iter = iterNiveau2->second.begin();
-						iter != iterNiveau2->second.end();
-						++iter) {
-							outfile << iter->poids << ":" << iter->mot << std::endl;
-					}
-				}
+bool Dictionnaire::SaveIntoFile(wstring file) {
+	wchar_t filepath[256];
+	wsprintf(filepath, L"%s%s%s\0", PATH_TO_DICO, file.c_str(), DIC);
+	std::wofstream outfile(filepath, std::ios::binary);
+	if (outfile.good()) {
+		DictionnaireNiveau2::iterator iter;
+		std::deque<MotPondere>::iterator iterMot;
+		for (iter = dico1.begin();
+			iter != dico1.end();
+			iter++) {
+			for (iterMot = iter->second.begin();
+				iterMot != iter->second.end();
+				iterMot++) {
+				outfile << iterMot->poids << ":" << iterMot->mot << std::endl;
 			}
 		}
 		outfile.close();
 	}
-	
 	return true;
 }
 
-unsigned int Dictionnaire::FindWordsAtAllCost(std::vector<std::string> & results
+unsigned int Dictionnaire::FindWordsAtAllCost(std::vector<wstring> & results
 	, unsigned int maxResults
-	, std::string keyWords)
+	, wstring keyWords)
 {
 	// Recherche rapide
 	maxResults -= FindWords(results, maxResults, keyWords);
@@ -247,7 +362,7 @@ unsigned int Dictionnaire::FindWordsAtAllCost(std::vector<std::string> & results
 	
 	// Gestion de la premiere lettre si aucun resultat et majuscule
 	if((maxResults > 0) && isupper(keyWords[0],loc)) {
-		std::string rechercheTemp = keyWords;
+		wstring rechercheTemp = keyWords;
 		if ((keyWords[0] == 'A') ||
 			(keyWords[0] == 'U') ||
 			(keyWords[0] == 'C') ||
@@ -292,26 +407,31 @@ unsigned int Dictionnaire::FindWordsAtAllCost(std::vector<std::string> & results
 	return (unsigned int)results.size();
 }
 
-unsigned int Dictionnaire::FindWords(std::vector<std::string> & results
+unsigned int Dictionnaire::FindWords(std::vector<wstring> & results
 	, unsigned int maxResults
-	, std::string keyWords
+	, wstring keyWords
 	, bool ignoreKeyWords)
 {
 	// Si aucune lettre fournie on ignore la demande
 	if (keyWords.length() == 0)	return 0;
 
+		//TCHAR rou[256];
+		//sprintf(rou, "return iterniveau2 %s %c %c %c %c\n", keyWords.c_str(), keyWords[0], keyWords.size() > 1 ? keyWords[1] : '~', keyWords.size() > 2 ? keyWords[2] : '~', keyWords.size() > 3 ? keyWords[3] : '~');
+		//OutputDebugString(rou);
+	
+
 	// Iterateur sur notre dictionnaire de niveau 0
-	DictionnaireNiveau0::iterator iterNiveau0;
+	DictionnaireNiveau0::iterator iter0;
 	// Iterateur sur notre dictionnaire de niveau 1
-	DictionnaireNiveau1::iterator iterNiveau1;
+	DictionnaireNiveau1::iterator iter1;
 	// Iterateur sur notre dictionnaire de niveau 2
-	DictionnaireNiveau2::iterator iterNiveau2;   
+	DictionnaireNiveau2::iterator iter2; 
 
 	// Conversion en minuscule de keyWords
-	char keyWordsTemp[MAX_WORD_LENGHT+1];
-	std::string keyWordsOld = keyWords; // Sauvegarde pour l'adaptation
+	wchar_t keyWordsTemp[MAX_WORD_LENGHT+1];
+	wstring keyWordsOld = keyWords; // Sauvegarde pour l'adaptation
 	if (keyWords.length() < MAX_WORD_LENGHT) { // Conversion possible
-		strcpy(keyWordsTemp, keyWords.c_str());
+		wsprintf(keyWordsTemp, keyWords.c_str());
 		CharLower(keyWordsTemp); //_strlwr( keyWordsTemp );
 		keyWords = keyWordsTemp;
 	}
@@ -320,56 +440,40 @@ unsigned int Dictionnaire::FindWords(std::vector<std::string> & results
 	// Si une seule lettre de fournie
 	if (keyWords.length() == 1) {
 		// On cherche les mots qui commence par la meme lettre
-		iterNiveau0 = dictionnaire.find(keyWords[0]);
-		if (iterNiveau0 == dictionnaire.end()) // Si on a pas trouve on retourne 0
+		iter2 = dico1.find(keyWords[0]);
+		if (iter2 == dico1.end()) // Si on a pas trouve on retourne 0
 			return 0;
 
-		// Pour tous les dictionnaire de niveau 1
-		for (iterNiveau1=iterNiveau0->second.begin();
-		iterNiveau1!=iterNiveau0->second.end();
-		iterNiveau1++) {
-			// Pour tous les dictionnaire de niveau 2
-			for (iterNiveau2=iterNiveau1->second.begin();
-			iterNiveau2!=iterNiveau1->second.end();
-			iterNiveau2++) {
-				// On a notre vecteur de mots terminaux que l'on filtre
-				filtrerVecteurMots(keyWords
-					, iterNiveau2->second
-					, results
-					, maxResults
-					, ignoreKeyWords);
-
-				// Si on a remplit le nombre des possibles on quitte
-				if (maxResults==0) {
-					adapterVecteurMots(keyWordsOld,results); // Adaptation du resultat
-					return (unsigned int)results.size(); // Taille du vecteur
-				}
-			}
+		filtrerVecteurMots(keyWords
+			, iter2->second
+			, results
+			, maxResults
+			, ignoreKeyWords);
+			
+		if (maxResults==0) {
+			adapterVecteurMots(keyWordsOld,results); // Adaptation du resultat
+			return (unsigned int)results.size(); // Taille du vecteur
 		}
 	}
 
 	// Si deux lettres de fournie
 	if (keyWords.length() == 2) {
 		// On cherche les mots qui commence par la meme lettre
-		iterNiveau0 = dictionnaire.find(keyWords[0]);
-		if (iterNiveau0 == dictionnaire.end()) // Si on a pas trouve on retourne 0
+		iter1 = dico2.find(keyWords[0]);
+		if (iter1 == dico2.end()) // Si on a pas trouve on retourne 0
 			return 0;
 
 		// On cherche les mots qui ont la meme deuxieme lettre
-		iterNiveau1 = iterNiveau0->second.find(keyWords[1]);
-		if (iterNiveau1 == iterNiveau0->second.end()) //Si on a pas trouve on retourne 0
+		iter2 = iter1->second.find(keyWords[1]);
+		if (iter2 == iter1->second.end()) //Si on a pas trouve on retourne 0
 			return 0;
 
-		// Pour tous les dictionnaire de niveau 2
-		for (iterNiveau2=iterNiveau1->second.begin();
-		iterNiveau2!=iterNiveau1->second.end();
-		iterNiveau2++) {
-			// On a notre vecteur de mots terminaux que l'on filtre
-			filtrerVecteurMots(keyWords
-				, iterNiveau2->second
-				, results
-				, maxResults
-				, ignoreKeyWords);
+		// On a notre vecteur de mots terminaux que l'on filtre
+		filtrerVecteurMots(keyWords
+			, iter2->second
+			, results
+			, maxResults
+			, ignoreKeyWords);
 
 			// Si on a remplit le nombre des possibles on quitte
 			if (maxResults==0) {
@@ -377,28 +481,28 @@ unsigned int Dictionnaire::FindWords(std::vector<std::string> & results
 				return (unsigned int)results.size(); // Taille du vecteur
 			}
 		}
-	}
+	
 
 	// Si trois lettre de fournies (Parfait)
 	if (keyWords.length() >= 3)	{
 		// On cherche les mots qui commence par la meme lettre
-		iterNiveau0 = dictionnaire.find(keyWords[0]);
-		if (iterNiveau0 == dictionnaire.end()) //Si on a pas trouve on retourne 0
+		iter0 = dico.find(keyWords[0]);
+		if (iter0 == dico.end()) {//Si on a pas trouve on retourne 0
 			return 0;
-
+		}
 		// On cherche les mots qui ont la meme deuxieme lettre
-		iterNiveau1 = iterNiveau0->second.find(keyWords[1]);
-		if (iterNiveau1 == iterNiveau0->second.end()) //Si on a pas trouve on retourne 0
+		iter1 = iter0->second.find(keyWords[1]);
+		if (iter1 == iter0->second.end()) { //Si on a pas trouve on retourne 0
 			return 0;
-
+		}
 		// On cherche les mots qui ont la meme troisieme lettre
-		iterNiveau2 = iterNiveau1->second.find(keyWords[2]);
-		if (iterNiveau2 == iterNiveau1->second.end()) //Si on a pas trouve on retourne 0
+		iter2 = iter1->second.find(keyWords[2]);
+		if (iter2 == iter1->second.end()) { //Si on a pas trouve on retourne 0
 			return 0;
-
+		}
 		// On a notre vecteur de mots terminaux que l'on filtre
 		filtrerVecteurMots(keyWords
-			, iterNiveau2->second
+			, iter2->second
 			, results
 			, maxResults
 			, ignoreKeyWords);
@@ -411,109 +515,281 @@ unsigned int Dictionnaire::FindWords(std::vector<std::string> & results
 	return (unsigned int)results.size();
 }
 
-void Dictionnaire::IncrementerPoids(std::string mot)
-{
-	// Iterateur sur notre dictionnaire de niveau 0
-	DictionnaireNiveau0::iterator iterNiveau0;
+unsigned int Dictionnaire::GetPond(wstring mot) {
+	DictionnaireNiveau0::iterator iter0;
 	// Iterateur sur notre dictionnaire de niveau 1
-	DictionnaireNiveau1::iterator iterNiveau1;
+	DictionnaireNiveau1::iterator iter1;
 	// Iterateur sur notre dictionnaire de niveau 2
-	DictionnaireNiveau2::iterator iterNiveau2;  
+	DictionnaireNiveau2::iterator iter2;
 
 	// Conversion en minuscule de mot
-	char motTemp[MAX_WORD_LENGHT+1];
+	wchar_t motTemp[MAX_WORD_LENGHT + 1];
 	if (mot.length() < MAX_WORD_LENGHT) { // Conversion possible
-		strcpy(motTemp,mot.c_str());
+		wcscpy_s(motTemp, mot.c_str());
+		CharLower(motTemp);
+		mot = motTemp;
+	}
+	else return -1;
+
+	// On cherche les mots qui commence par la meme lettre
+	iter0 = dico.find(mot[0]);
+	if (iter0 == dico.end()) //Si on a pas trouve on retourne
+		return -1;
+
+	// On cherche les mots qui ont la meme deuxieme lettre
+	iter1 = iter0->second.find(mot[1]);
+	if (iter1 == iter0->second.end()) //Si on a pas trouve on retourne
+		return -1;
+
+	// On cherche les mots qui ont la meme troisieme lettre
+	iter2 = iter1->second.find(mot[2]);
+	if (iter2 == iter1->second.end()) //Si on a pas trouve on retourne
+		return -1;
+
+	for (std::deque<MotPondere>::iterator iter = iter2->second.begin();
+		iter != iter2->second.end();
+		++iter) {
+		// On a trouve le mot
+		if (iter->mot.compare(mot) == 0) {
+			return iter->poids;
+		}
+	}
+	return -1;
+}
+
+void Dictionnaire::SetPond(wstring mot, unsigned int pond) {
+	DictionnaireNiveau0::iterator iter0;
+	// Iterateur sur notre dictionnaire de niveau 1
+	DictionnaireNiveau1::iterator iter1;
+	// Iterateur sur notre dictionnaire de niveau 2
+	DictionnaireNiveau2::iterator iter2;
+
+	// Conversion en minuscule de mot
+	wchar_t motTemp[MAX_WORD_LENGHT + 1];
+	if (mot.length() < MAX_WORD_LENGHT) { // Conversion possible
+		wcscpy_s(motTemp, mot.c_str());
 		CharLower(motTemp);
 		mot = motTemp;
 	}
 	else return;
 
-	// Si trois lettre de fournies (Parfait)
-	if (mot.length() >= 3) {
-		// On cherche les mots qui commence par la meme lettre
-		iterNiveau0 = dictionnaire.find(mot[0]);
-		if (iterNiveau0 == dictionnaire.end()) //Si on a pas trouve on retourne
-			return;
+	/* MAJ DICO */
+	// On cherche les mots qui commence par la meme lettre
+	iter0 = dico.find(mot[0]);
+	if (iter0 == dico.end()) //Si on a pas trouve on retourne
+		return;
 
-		// On cherche les mots qui ont la meme deuxieme lettre
-		iterNiveau1 = iterNiveau0->second.find(mot[1]);
-		if (iterNiveau1 == iterNiveau0->second.end()) //Si on a pas trouve on retourne
-			return;
+	// On cherche les mots qui ont la meme deuxieme lettre
+	iter1 = iter0->second.find(mot[1]);
+	if (iter1 == iter0->second.end()) //Si on a pas trouve on retourne
+		return;
 
-		// On cherche les mots qui ont la meme troisieme lettre
-		iterNiveau2 = iterNiveau1->second.find(mot[2]);
-		if (iterNiveau2 == iterNiveau1->second.end()) //Si on a pas trouve on retourne
-			return;
+	// On cherche les mots qui ont la meme troisieme lettre
+	iter2 = iter1->second.find(mot[2]);
+	if (iter2 == iter1->second.end()) //Si on a pas trouve on retourne
+		return;
 
-		for (std::deque<MotPondere>::iterator iter = iterNiveau2->second.begin();
-		iter != iterNiveau2->second.end();
+	for (std::deque<MotPondere>::iterator iter = iter2->second.begin();
+		iter != iter2->second.end();
 		++iter) {
-			// On a trouve le mot
-			if (iter->mot.compare(mot) == 0) { 
-				iter->poids++; // Incremente le poids
-				std::sort(iterNiveau2->second.begin()
-					, iterNiveau2->second.end()
-					, sort_mot_inverted());
-				break;
-			}
+		// On a trouve le mot
+		if (iter->mot.compare(mot) == 0) {
+			iter->poids = pond;
+			trierDictionnaire();
+			break;
+		}
+	}
+
+	/* MAJ DICO2 */
+	iter1 = dico2.find(mot[0]);
+	iter2 = iter1->second.find(mot[1]);
+	for (std::deque<MotPondere>::iterator iter = iter2->second.begin();
+		iter != iter2->second.end();
+		++iter) {
+		if (iter->mot.compare(mot) == 0) {
+			iter->poids = pond;
+			trierDictionnaire();
+			break;
+		}
+	}
+
+	/* MAJ DICO1 */
+	iter2 = dico1.find(mot[0]);
+	for (std::deque<MotPondere>::iterator iter = iter2->second.begin();
+		iter != iter2->second.end();
+		++iter) {
+		if (iter->mot.compare(mot) == 0) {
+			iter->poids = pond;
+			trierDictionnaire();
+			break;
 		}
 	}
 }
 
-void Dictionnaire::SupprimerMot(std::string mot)
+
+void Dictionnaire::IncrementerPoids(wstring mot)
 {
 	// Iterateur sur notre dictionnaire de niveau 0
-	DictionnaireNiveau0::iterator iterNiveau0;
+	DictionnaireNiveau0::iterator iter0;
 	// Iterateur sur notre dictionnaire de niveau 1
-	DictionnaireNiveau1::iterator iterNiveau1;
+	DictionnaireNiveau1::iterator iter1;
 	// Iterateur sur notre dictionnaire de niveau 2
-	DictionnaireNiveau2::iterator iterNiveau2;  
+	DictionnaireNiveau2::iterator iter2;  
 
 	// Conversion en minuscule de mot
-	char motTemp[MAX_WORD_LENGHT+1];
+	wchar_t motTemp[MAX_WORD_LENGHT+1];
 	if (mot.length() < MAX_WORD_LENGHT) { // Conversion possible
-		strcpy(motTemp,mot.c_str());
+		wcscpy_s(motTemp, mot.c_str());
 		CharLower(motTemp);
 		mot = motTemp;
 	}
 	else return;
 
-	// Si trois lettre de fournies (Parfait)
-	if (mot.length() >= 3) {
-		// On cherche les mots qui commence par la meme lettre
-		iterNiveau0 = dictionnaire.find(mot[0]);
-		if (iterNiveau0 == dictionnaire.end()) //Si on a pas trouve on retourne
-			return;
+	iter2 = dico1.find(mot[0]);
+	if (iter2 == dico1.end())
+		return;
 
-		// On cherche les mots qui ont la meme deuxieme lettre
-		iterNiveau1 = iterNiveau0->second.find(mot[1]);
-		if (iterNiveau1 == iterNiveau0->second.end()) //Si on a pas trouve on retourne
-			return;
-
-		// On cherche les mots qui ont la meme troisieme lettre
-		iterNiveau2 = iterNiveau1->second.find(mot[2]);
-		if (iterNiveau2 == iterNiveau1->second.end()) //Si on a pas trouve on retourne
-			return;
-
-		for (std::deque<MotPondere>::iterator iter = iterNiveau2->second.begin();
-		iter != iterNiveau2->second.end();
+	for (std::deque<MotPondere>::iterator iter = iter2->second.begin();
+		iter != iter2->second.end();
 		++iter) {
-			// On a trouve le mot
-			if (iter->mot.compare(mot) == 0) { 
-				iterNiveau2->second.erase(iter); // Supprime le mot
-				break;
-			}
+		if (iter->mot.compare(mot) == 0) {
+			iter->poids++; // Incremente le poids
+			std::sort(iter2->second.begin()
+				, iter2->second.end()
+				, sort_mot_inverted());
+			break;
 		}
 	}
+
+	// On cherche les mots qui ont la meme troisieme lettre
+	iter1 = dico2.find(mot[0]);
+	if (iter1 == dico2.end()) //Si on a pas trouve on retourne
+		return;
+
+	iter2 = iter1->second.find(mot[1]);
+	if (iter2 == iter1->second.end())
+		return;
+
+	for (std::deque<MotPondere>::iterator iter = iter2->second.begin();
+		iter != iter2->second.end();
+		++iter) {
+		// On a trouve le mot
+		if (iter->mot.compare(mot) == 0) {
+			iter->poids++; // Incremente le poids
+			trierDictionnaire();
+			break;
+		}
+	}
+
+	// On cherche les mots qui commence par la meme lettre
+	iter0 = dico.find(mot[0]);
+	if (iter0 == dico.end()) //Si on a pas trouve on retourne
+		return;
+
+	// On cherche les mots qui ont la meme deuxieme lettre
+	iter1 = iter0->second.find(mot[1]);
+	if (iter1 == iter0->second.end()) //Si on a pas trouve on retourne
+		return;
+
+	// On cherche les mots qui ont la meme troisieme lettre
+	iter2 = iter1->second.find(mot[2]);
+	if (iter2 == iter1->second.end()) //Si on a pas trouve on retourne
+		return;
+
+	for (std::deque<MotPondere>::iterator iter = iter2->second.begin();
+	iter != iter2->second.end();
+	++iter) {
+		// On a trouve le mot
+		if (iter->mot.compare(mot) == 0) { 
+			iter->poids++; // Incremente le poids
+			std::sort(iter2->second.begin()
+				, iter2->second.end()
+				, sort_mot_inverted());
+			break;
+		}
+	}		
+	
+}
+
+void Dictionnaire::SupprimerMot(wstring mot)
+{
+	// Iterateur sur notre dictionnaire de niveau 0
+	DictionnaireNiveau0::iterator iter0;
+	// Iterateur sur notre dictionnaire de niveau 1
+	DictionnaireNiveau1::iterator iter1;
+	// Iterateur sur notre dictionnaire de niveau 2
+	DictionnaireNiveau2::iterator iter2;
+
+	std::deque<MotPondere>::iterator iter;
+
+	// Conversion en minuscule de mot
+	wchar_t motTemp[MAX_WORD_LENGHT+1];
+	if (mot.length() < MAX_WORD_LENGHT) { // Conversion possible
+		wcscpy_s(motTemp, mot.c_str());
+		CharLower(motTemp);
+		mot = motTemp;
+	}
+	else return;
+
+	// SUPPRESSION DICO ONE CHAR
+	iter2 = dico1.find(mot[0]);
+	if (iter2 == dico1.end())
+		return;
+	for (iter = iter2->second.begin();
+		iter != iter2->second.end();
+		++iter) {
+		if (iter->mot.compare(mot) == 0) {
+			iter2->second.erase(iter);
+			break;
+		}
+	}
+
+	// SUPPRESSION DICO TWO CHAR
+	iter1 = dico2.find(mot[0]);
+	iter2 = iter1->second.find(mot[1]);
+	for (iter = iter2->second.begin();
+		iter != iter2->second.end();
+		++iter) {
+		if (iter->mot.compare(mot) == 0) {
+			iter2->second.erase(iter);
+			break;
+		}
+	}
+
+	// SUPPRESSION DICO THREE CHAR AND MORE
+	iter0 = dico.find(mot[0]);
+	if (iter0 == dico.end()) //Si on a pas trouve on retourne
+		return;
+	// On cherche les mots qui ont la meme deuxieme lettre
+	iter1 = iter0->second.find(mot[1]);
+	if (iter1 == iter0->second.end()) //Si on a pas trouve on retourne
+		return;
+	// On cherche les mots qui ont la meme troisieme lettre
+	iter2 = iter1->second.find(mot[2]);
+	if (iter2 == iter1->second.end()) //Si on a pas trouve on retourne
+		return;
+	for (iter = iter2->second.begin();
+	iter != iter2->second.end();
+	++iter) {
+		// On a trouve le mot
+		if (iter->mot.compare(mot) == 0) { 
+			iter2->second.erase(iter); // Supprime le mot
+			break;
+		}
+	}
+
+	
+	
 }
 
 void Dictionnaire::SupprimerMots()
 {
-	dictionnaire.clear();
+	dico.clear();
+	dico1.clear();
+	dico2.clear();
 }
 
-bool Dictionnaire::ExisteMot(std::string mot)
+bool Dictionnaire::ExisteMot(wstring mot)
 {
 	// Iterateur sur notre dictionnaire de niveau 0
 	DictionnaireNiveau0::iterator iterNiveau0;
@@ -523,9 +799,9 @@ bool Dictionnaire::ExisteMot(std::string mot)
 	DictionnaireNiveau2::iterator iterNiveau2;  
 
 	// Conversion en minuscule de mot
-	char motTemp[MAX_WORD_LENGHT+1];
+	wchar_t motTemp[MAX_WORD_LENGHT+1];
 	if (mot.length()<MAX_WORD_LENGHT) { // Conversion possible
-		strcpy(motTemp,mot.c_str());
+		wcscpy_s(motTemp,mot.c_str());
 		CharLower(motTemp);
 		mot = motTemp;
 	}
@@ -534,8 +810,8 @@ bool Dictionnaire::ExisteMot(std::string mot)
 	// Si trois lettre de fournies (Parfait)
 	if (mot.length() >= 3) {
 		// On cherche les mots qui commence par la meme lettre
-		iterNiveau0 = dictionnaire.find(mot[0]);
-		if (iterNiveau0 == dictionnaire.end()) //Si on a pas trouve on retourne
+		iterNiveau0 = dico.find(mot[0]);
+		if (iterNiveau0 == dico.end()) //Si on a pas trouve on retourne
 			return false;
 
 		// On cherche les mots qui ont la meme deuxieme lettre
@@ -561,28 +837,32 @@ bool Dictionnaire::ExisteMot(std::string mot)
 	return false;
 }
 
-void Dictionnaire::AjouterMot(std::string mot)
+void Dictionnaire::AjouterMot(wstring mot, unsigned int poids)
 {
 	if (mot.length() >= 3) {
 		// Conversion en minuscule de mot
-		char motTemp[MAX_WORD_LENGHT+1];
+		wchar_t motTemp[MAX_WORD_LENGHT+1];
 		if (mot.length()<MAX_WORD_LENGHT) { // Conversion possible
-			strcpy(motTemp,mot.c_str());
+			wcscpy_s(motTemp, mot.c_str());
 			CharLower(motTemp);
 			mot = motTemp;
 		}
 		else return;
-
+		if (ExisteMot(mot)) return;
 		MotPondere motPond;
-		motPond.poids = 0;
+		motPond.poids = poids;
 		motPond.mot = mot;
 
 		// Sauvegarde du mot pondere dans le dictionnaire
-		dictionnaire[motPond.mot[0]][motPond.mot[1]][motPond.mot[2]].push_back(motPond);
+		dico1[motPond.mot[0]].push_back(motPond);
+		dico2[motPond.mot[0]][motPond.mot[1]].push_back(motPond);
+		dico[motPond.mot[0]][motPond.mot[1]][motPond.mot[2]].push_back(motPond);
+
+		trierDictionnaire();
 	}
 }
 
-void Dictionnaire::ResetPoids(std::string mot)
+void Dictionnaire::ResetPoids(wstring mot)
 {
 	// Iterateur sur notre dictionnaire de niveau 0
 	DictionnaireNiveau0::iterator iterNiveau0;
@@ -591,45 +871,81 @@ void Dictionnaire::ResetPoids(std::string mot)
 	// Iterateur sur notre dictionnaire de niveau 2
 	DictionnaireNiveau2::iterator iterNiveau2;  
 
+	std::deque<MotPondere>::iterator iter;
+
 	// Conversion en minuscule de mot
-	char motTemp[MAX_WORD_LENGHT+1];
+	wchar_t motTemp[MAX_WORD_LENGHT+1];
 	if (mot.length() < MAX_WORD_LENGHT) { // Conversion possible
-		strcpy(motTemp,mot.c_str());
+		wcscpy_s(motTemp,mot.c_str());
 		CharLower(motTemp);
 		mot = motTemp;
 	}
 	else return;
 
-	// Si trois lettre de fournies (Parfait)
-	if (mot.length() >= 3) {
-		// On cherche les mots qui commence par la meme lettre
-		iterNiveau0 = dictionnaire.find(mot[0]);
-		if (iterNiveau0 == dictionnaire.end()) //Si on a pas trouve on retourne
-			return;
-
-		// On cherche les mots qui ont la meme deuxieme lettre
-		iterNiveau1 = iterNiveau0->second.find(mot[1]);
-		if (iterNiveau1 == iterNiveau0->second.end()) //Si on a pas trouve on retourne
-			return;
-
-		// On cherche les mots qui ont la meme troisieme lettre
-		iterNiveau2 = iterNiveau1->second.find(mot[2]);
-		if (iterNiveau2 == iterNiveau1->second.end()) //Si on a pas trouve on retourne
-			return;
-
-		for (std::deque<MotPondere>::iterator iter = iterNiveau2->second.begin();
+	iterNiveau2 = dico1.find(mot[0]);
+	if (iterNiveau2 == dico1.end()) //Si on a pas trouve on retourne
+		return;
+	for (iter = iterNiveau2->second.begin();
 		iter != iterNiveau2->second.end();
 		++iter) {
-			// On a trouve le mot
-			if (iter->mot.compare(mot) == 0) { 
-				iter->poids = 0; // RAZ du poids
-				std::sort(iterNiveau2->second.begin()
-					, iterNiveau2->second.end()
-					, sort_mot_inverted());
-				break;
-			}
+		// On a trouve le mot
+		if (iter->mot.compare(mot) == 0) {
+			iter->poids = 0; // RAZ du poids
+			std::sort(iterNiveau2->second.begin()
+				, iterNiveau2->second.end()
+				, sort_mot_inverted());
+			break;
 		}
 	}
+
+	// On cherche les mots qui ont la meme deuxieme lettre
+	iterNiveau1 = iterNiveau0->second.find(mot[0]);
+	if (iterNiveau1 == iterNiveau0->second.end()) //Si on a pas trouve on retourne
+		return;
+	// On cherche les mots qui ont la meme troisieme lettre
+	iterNiveau2 = iterNiveau1->second.find(mot[1]);
+	if (iterNiveau2 == iterNiveau1->second.end()) //Si on a pas trouve on retourne
+		return;
+	for (std::deque<MotPondere>::iterator iter = iterNiveau2->second.begin();
+		iter != iterNiveau2->second.end();
+		++iter) {
+		// On a trouve le mot
+		if (iter->mot.compare(mot) == 0) {
+			iter->poids = 0; // RAZ du poids
+			std::sort(iterNiveau2->second.begin()
+				, iterNiveau2->second.end()
+				, sort_mot_inverted());
+			break;
+		}
+	}
+
+	// On cherche les mots qui commence par la meme lettre
+	iterNiveau0 = dico.find(mot[0]);
+	if (iterNiveau0 == dico.end()) //Si on a pas trouve on retourne
+		return;
+
+	// On cherche les mots qui ont la meme deuxieme lettre
+	iterNiveau1 = iterNiveau0->second.find(mot[1]);
+	if (iterNiveau1 == iterNiveau0->second.end()) //Si on a pas trouve on retourne
+		return;
+
+	// On cherche les mots qui ont la meme troisieme lettre
+	iterNiveau2 = iterNiveau1->second.find(mot[2]);
+	if (iterNiveau2 == iterNiveau1->second.end()) //Si on a pas trouve on retourne
+		return;
+
+	for (std::deque<MotPondere>::iterator iter = iterNiveau2->second.begin();
+	iter != iterNiveau2->second.end();
+	++iter) {
+		// On a trouve le mot
+		if (iter->mot.compare(mot) == 0) { 
+			iter->poids = 0; // RAZ du poids
+			std::sort(iterNiveau2->second.begin()
+				, iterNiveau2->second.end()
+				, sort_mot_inverted());
+			break;
+		}
+	}	
 }
 
 void Dictionnaire::ResetPoids()
@@ -641,9 +957,38 @@ void Dictionnaire::ResetPoids()
 	// Iterateur sur notre dictionnaire de niveau 2
 	DictionnaireNiveau2::iterator iterNiveau2;   
 
+	std::deque<MotPondere>::iterator iter;
+
+	for (iterNiveau2 = dico1.begin();
+		iterNiveau2 != dico1.end();
+		iterNiveau2++) {
+		for (iter = iterNiveau2->second.begin();
+			iter != iterNiveau2->second.end();
+			++iter) {
+			iter->poids = 0;
+		}
+	}
+
+	// Pour tous les dictionnaire de niveau 1
+	for (iterNiveau1 = dico2.begin();
+		iterNiveau1 != dico2.end();
+		++iterNiveau1) {
+		// Pour tous les dictionnaire de niveau 2
+		for (iterNiveau2 = iterNiveau1->second.begin();
+			iterNiveau2 != iterNiveau1->second.end();
+			++iterNiveau2) {
+			// Pour tous les mot
+			for (iter = iterNiveau2->second.begin();
+				iter != iterNiveau2->second.end();
+				++iter) {
+				iter->poids = 0;
+			}
+		}
+	}
+
 	// Pour tous les dictionnaire de niveau 0
-	for (iterNiveau0 = dictionnaire.begin();
-	iterNiveau0 != dictionnaire.end();
+	for (iterNiveau0 = dico.begin();
+	iterNiveau0 != dico.end();
 	++iterNiveau0) {
 		// Pour tous les dictionnaire de niveau 1
 		for (iterNiveau1 = iterNiveau0->second.begin();
@@ -654,7 +999,7 @@ void Dictionnaire::ResetPoids()
 			iterNiveau2 != iterNiveau1->second.end();
 			++iterNiveau2) {
 				// Pour tous les mot
-				for (std::deque<MotPondere>::iterator iter = iterNiveau2->second.begin();
+				for (iter = iterNiveau2->second.begin();
 				iter != iterNiveau2->second.end();
 				++iter) {
 					iter->poids = 0;
@@ -665,4 +1010,10 @@ void Dictionnaire::ResetPoids()
 
 	// Il faut retrier le dictionnaire
 	trierDictionnaire();
+}
+
+BOOL Dictionnaire::DeleteDico(wstring dico) {
+	wchar_t filepath[256];
+	wsprintf(filepath, L"%s%s%s\0", PATH_TO_DICO, dico.c_str(), DIC);
+	return DeleteFile(filepath);
 }

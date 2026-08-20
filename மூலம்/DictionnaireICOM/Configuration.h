@@ -30,25 +30,44 @@
 /* ------------------------------------------------------- STL includes */
 #include <map>
 #include <string>
+#include <windows.h>
+
+using namespace std;
 
 /* --------------------------------------------------------- CONSTANTES */
 // Define des constantes de type string
-#define FONT_TYPE "config.font.type"
+#define FONT_TYPE						L"config.font.type"
+#define DICTIONNARY_FILE_NAME			L"config.dictionnary.file.name"
+#define VOICE_SELECTED_VOICE			L"config.voice.selected"
+#define APP_LANGUAGE					L"config.app.lang"
 
 // Define des constantes de type unsigned int
-#define FONT_TEXT_COLOR "config.font.text.color"
-#define DIALOG_POS_X "config.dialog.pos.x"
-#define DIALOG_POS_Y "config.dialog.pos.y"
-#define DIALOG_WIDTH "config.dialog.size.x"
-#define DIALOG_HEIGHT "config.dialog.size.y"
-#define DIALOG_BACKGROUND_COLOR "config.dialog.background.color"
-#define SPLASH_NB_LETTERS "config.splash.nbletters"
-#define SPLASH_TIME "config.splash.time"
+#define FONT_TEXT_COLOR					L"config.font.text.color"
+#define DIALOG_POS_X					L"config.dialog.pos.x"
+#define DIALOG_POS_Y					L"config.dialog.pos.y"
+#define DIALOG_WIDTH					L"config.dialog.size.x"
+#define DIALOG_HEIGHT					L"config.dialog.size.y"
+#define DIALOG_BACKGROUND_COLOR			L"config.dialog.background.color"
+#define DIALOG_BACKGROUND_FOCUS_COLOR	L"config.dialog.background.focus.color"
+#define FONT_TEXT_FOCUS_COLOR			L"config.font.text.focus.color"
+#define DIALOG_OPACITY					L"config.dialog.opacity"
+#define SPLASH_NB_LETTERS				L"config.splash.nbletters"
+#define SPLASH_TIME						L"config.splash.time"
+#define NB_WORD							L"config.boutons.max"
+#define VOICE_VOLUME					L"config.voice.volume"
+#define VOICE_RATE						L"config.voice.rate"
+
 
 // Define des constantes de type bool
-#define FONT_BOLD "config.font.bold"
-#define FONT_ITALIC "config.font.italic"
-#define SPLASH_AUTO_INSERT "config.splash.autoinsert"
+#define FONT_BOLD						L"config.font.bold"
+#define FONT_ITALIC						L"config.font.italic"
+#define SPLASH_AUTO_INSERT				L"config.splash.autoinsert"
+#define VOICE_ACTIVATION_HOVER			L"config.voice.activation.hover"
+#define VOICE_ACTIVATION_INSERT			L"config.voice.activation.insert"
+#define VOICE_RATE_NEGATIVE				L"config.voice.rate.negative"
+#define SELECT_BY_FUNCTION				L"config.select.function"
+#define SELECT_BY_CLIC					L"config.select.clic"
+#define SELECT_BY_ARROWS				L"config.select.arrows"
 
 class Configuration
 {
@@ -57,11 +76,13 @@ class Configuration
 /* -------------------------------------------------------------------- */
 public:
 /*------------------------------------------------- Fonctions publiques */
+	
+	Configuration();
 	/*
 	 * @brief Constructeur de la classe Configuration.
 	 * @param fichierConfig Chemin d'acces au fichier de configuration.
 	 */
-	Configuration(std::string fichierConfig);
+	Configuration(const wchar_t * fichierConfig);
 
 	/* @brief Destructeur. */
 	~Configuration();
@@ -71,49 +92,53 @@ public:
 	 * @param fichierConfig Fichier dans lequel sauvegarder la config.
 	 * @return FALSE si la sauvegarde echoue. TRUE sinon.
 	 */
-	bool SaveIntoFile(std::string fichierConfig);
+	bool SaveIntoFile(const wchar_t *fichierConfig);
 
 	/*
 	 * @brief Renvoi un parametre de type string.
 	 * @param paramName Nom du parametre a retourner.
 	 * @return Renvoi une string representant le parametre demande.
 	 */
-	std::string GetStringParam(std::string paramName);
+	wstring GetStringParam(wstring paramName);
 
 	/*
 	 * @brief Met a jour une parametre de type string.
 	 * @param paramName Nom du parametre a modifier.
 	 * @param paramValue Valeur du paramatre.
 	 */
-	void SetStringParam(std::string paramName, std::string paramValue);
+	void SetStringParam(wstring paramName, wstring paramValue);
 
 	/*
 	 * @brief Renvoi un parametre de type unsigned int.
 	 * @param paramName Nom du parametre a retourner.
 	 * @return Renvoi un unsigned int representant le parametre demande.
 	 */
-	unsigned int GetUnsignedIntParam(std::string paramName);
+	unsigned int GetUnsignedIntParam(wstring paramName);
 
 	/*
 	 * @brief Met a jour une parametre de type unsigned int.
 	 * @param paramName Nom du parametre a modifier.
 	 * @param paramValue Valeur du paramatre.
 	 */
-	void SetUnsignedIntParam(std::string paramName, unsigned int paramValue);
+	void SetUnsignedIntParam(wstring paramName, unsigned int paramValue);
 
 	/*
 	 * @brief Renvoi un parametre de type bool.
 	 * @param paramName Nom du parametre a retourner.
 	 * @return Renvoi un bool representant le parametre demande.
 	 */
-	bool GetBoolParam(std::string paramName);
+	bool GetBoolParam(wstring paramName);
 
 	/*
 	 * @brief Met a jour une parametre de type bool.
 	 * @param paramName Nom du parametre a modifier.
 	 * @param paramValue Valeur du paramatre.
 	 */
-	void SetBoolParam(std::string paramName, bool paramValue);
+	void SetBoolParam(wstring paramName, bool paramValue);
+
+	LONG GetRate();
+
+	void SetRate(LONG rate);
 
 /* -------------------------------------------------------------------- */
 /*                        PRIVATE                                       */
@@ -125,9 +150,9 @@ private:
 
 /*---------------------------------------------------- Membres privés	*/
 	// Nom du fichier de configuration
-	std::string mFichierConfig;
+	const wchar_t *mFichierConfig;
 	// Differentes maps contenant les parametres de configuration par types
-	std::map<std::string, std::string> mMapString;
-	std::map<std::string, unsigned int> mMapUnsigned;
-	std::map<std::string, bool> mMapBool;
+	map<wstring, wstring> mMapString;
+	map<wstring, unsigned int> mMapUnsigned;
+	map<wstring, bool> mMapBool;
 };

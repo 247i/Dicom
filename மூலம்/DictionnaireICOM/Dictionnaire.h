@@ -33,12 +33,17 @@
 #include <deque>
 #include <map>
 
+using namespace std;
 /* -------------------------------------------------------------------- */
 /*                        PUBLIC                                        */
 /* -------------------------------------------------------------- Types */
-#define DictionnaireNiveau2 std::map<char, std::deque<MotPondere> >
-#define DictionnaireNiveau1 std::map<char, DictionnaireNiveau2 >
-#define DictionnaireNiveau0 std::map< char, DictionnaireNiveau1 >
+#define DictionnaireNiveau2 std::map<wchar_t, std::deque<MotPondere>>
+#define DictionnaireNiveau1 std::map<wchar_t, DictionnaireNiveau2 >
+#define DictionnaireNiveau0 std::map<wchar_t, DictionnaireNiveau1 >
+
+/* ------------------------------------------------- Variables globales */
+#define PATH_TO_DICO L".\\Dictionnaires\\"
+#define DIC L".dic"
 
 /**
  * @brief Structure permettant de pondere un mot dans le dictionnaire.
@@ -46,8 +51,16 @@
 struct MotPondere
 {
 	unsigned int poids; // Plus le poids est grand, plus le mot est prioritaire
-	std::string mot;
+	wstring mot;
 };
+
+typedef enum Language
+{
+	FR, 
+	EN
+};
+
+static int distanceLev(wstring str1, wstring str2);
 
 class Dictionnaire
 {
@@ -67,6 +80,7 @@ public:
 	 */
 	~Dictionnaire();
 
+
 	/**
 	 * @brief Charge un fichier dictionnaire a partir d'un fichier sur le
 	 * disque dur.
@@ -77,7 +91,7 @@ public:
 	 * @retval false Une erreur est survenue pendant le chargement.
 	 * ATTENTION : Aucun mot du dictionnaire ne doit etre inferieur a 3 caracteres.
 	*/
-	bool LoadFromFile(char * file, bool checkExisteMot=false);
+	bool LoadFromFile(wstring file, bool newDico = false);
 
 	/**
 	 * @brief Sauvegarde le contenu actuel du dictionnaire dans un fichier.
@@ -85,7 +99,7 @@ public:
 	 * @retval true Aucune erreur de sauvegarde.
 	 * @retval false Une erreur est survenue pendant la sauvegarde.
 	 */
-	bool SaveIntoFile(char * file);
+	bool SaveIntoFile(wstring file);
 
 	/**
 	 * @brief Recherche les mots pouvant completer le texte fournit en entree.
@@ -97,9 +111,9 @@ public:
      * @param keyWords Chaine de caractere racine de la recherche.
 	 * @return Renvoi le nombre de mots trouve.
 	 */
-	unsigned int FindWordsAtAllCost(std::vector<std::string> & results
+	unsigned int FindWordsAtAllCost(std::vector<wstring> & results
 		, unsigned int maxResults
-		, std::string keyWords);
+		, wstring keyWords);
 
 	/**
 	 * @brief Rechercher les mots pouvant completer le texte fournit en entree.
@@ -110,22 +124,26 @@ public:
 	 * @param ignoreKeyWords Indique que la recherche ne doit pas se trouver dans results.
 	 * @return Renvoi le nombre de mots trouve.
 	*/
-	unsigned int FindWords( std::vector<std::string> & results
+	unsigned int FindWords(std::vector<wstring> & results
 		, unsigned int maxResults
-		, std::string keyWords
+		, wstring keyWords
 		, bool ignoreKeyWords = true);
-	
+
+	unsigned int GetPond(wstring word);
+
+	void SetPond(wstring mot, unsigned int pond);
+
 	/**
 	 * @brief Incremente le poids du mot fourni en parametre.
 	 * @param mot Mot a incrementer.
 	 */
-	void IncrementerPoids(std::string mot);
+	void IncrementerPoids(wstring mot);
 
 	/**
 	 * @brief Supprime un mot du dictionnaire.
 	 * @param mot Mot a supprimer.
 	 */
-	void SupprimerMot(std::string mot);
+	void SupprimerMot(wstring mot);
 
 	/**
 	 * @brief Supprime tous les mots du dictionnaire.
@@ -138,22 +156,28 @@ public:
 	 * @retval true Le mot existe.
 	 * @retval false Le mot n'existe pas.
 	 */
-	bool ExisteMot(std::string mot);
+	bool ExisteMot(wstring mot);
 
 	/**
 	 * @brief Ajoute un mot au dictionnaire.
 	 * @param mot Mot a ajouter.
 	 */
-	void AjouterMot(std::string mot);
+	void AjouterMot(wstring mot, unsigned int poids = 0);
 
 	/**
 	 * @brief Remet a zero le poid du mot dans le dictionnaire.
 	 * @param mot Mot pour lequel il faut mettre a zero le poids
 	 */
-	void ResetPoids(std::string mot);
+	void ResetPoids(wstring mot);
 
 	/* @brief Remet a zero le poid de chaque mot du dictionnaire. */
 	void ResetPoids();
+
+	std::deque<MotPondere> GetAllWords();
+
+	Language GetLang() { return lang; }
+
+	BOOL DeleteDico(wstring dico);
 	
 /* -------------------------------------------------------------------- */
 /*                        PRIVATE                                       */
@@ -176,9 +200,9 @@ private:
      * @param maxResults Nombre maximum de mot a inserer (Peut etre decremente).
 	 * @param ignoreKeyWords Indique que la recherche ne doit pas se trouver dans results.
 	 */
-	void filtrerVecteurMots(std::string & keyWords
+	void filtrerVecteurMots(wstring & keyWords
 		, std::deque<MotPondere> & motsPonderes
-		, std::vector<std::string> & results
+		, std::vector<wstring> & results
 		, unsigned int & maxResults
 		, bool ignoreKeyWords);
 	
@@ -189,13 +213,16 @@ private:
 	 * @param keyWords Texte de recherche.
 	 * @param results Vecteurs des mots a adapter.
 	 */
-	void adapterVecteurMots(std::string & keyWords, std::vector<std::string> & results);
+	void adapterVecteurMots(wstring & keyWords, std::vector<wstring> & results);
 
+	Language lang;
 /* -------------------------------------------------------------------- */
 /*                        PROTECTED                                     */
 /* -------------------------------------------------------------------- */
 protected:
 /*------------------------------------------------- Variables protegées */
-	DictionnaireNiveau0 dictionnaire; // Structure de recherche
+	DictionnaireNiveau2 dico1; // Structure de recherche pour un caractère
+	DictionnaireNiveau1 dico2; // Structure de recherche pour deux caractères
+	DictionnaireNiveau0 dico; // Structure de recherche pour trois caractères ou plus
 };
 
